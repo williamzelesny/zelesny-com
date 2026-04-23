@@ -1,0 +1,68 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import portrait from '../assets/portrait.jpg';
+
+const links = [
+	{ label: 'Email', href: 'mailto:william@zelesny.com' },
+	{ label: 'LinkedIn', href: 'https://www.linkedin.com/in/wzelesny' },
+	{ label: 'GitHub', href: 'https://github.com/williamzelesny' },
+];
+---
+
+<Base title="William Zelesny">
+	<main class="mx-auto max-w-xl px-6 py-24 sm:py-32">
+		<header class="flex items-center gap-6">
+			<Image
+				src={portrait}
+				alt="William Zelesny"
+				width={256}
+				height={256}
+				loading="eager"
+				class="h-28 w-28 shrink-0 rounded-full object-cover sm:h-32 sm:w-32"
+			/>
+			<div>
+				<h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">William Zelesny</h1>
+				<p class="mt-2 text-neutral-600">
+					Software engineer focused on improving developer experience through automation, testing, and observability.
+				</p>
+			</div>
+		</header>
+
+		<section class="mt-10 space-y-4 text-neutral-700 leading-relaxed">
+			<p>
+				I'm based in New Jersey, currently at Volvo Cars, where I work on
+				DevOps and cloud engineering — CI/CD pipelines and infrastructure on
+				AWS and Azure. Similar work at JPMorgan Chase and PNC before that.
+				The goal is always the same: give engineers faster feedback, safer
+				deploys, and fewer surprises in production.
+			</p>
+			<p>
+				Earlier in my career I worked in application performance management,
+				starting at Merck/Schering-Plough and continuing at Verizon and PNC
+				— figuring out why systems are slow, and instrumenting them so the
+				answers are easy to find. That foundation still shapes how I think
+				about observability and reliability in anything I ship.
+			</p>
+		</section>
+
+		<section class="mt-12">
+			<h2 class="text-sm font-medium uppercase tracking-wider text-neutral-500">
+				Elsewhere
+			</h2>
+			<ul class="mt-4 space-y-2">
+				{links.map(({ label, href }) => (
+					<li>
+						<a
+							href={href}
+							class="inline-flex items-baseline gap-2 text-neutral-900 underline decoration-neutral-300 underline-offset-4 transition hover:decoration-neutral-900"
+						>
+							<span aria-hidden="true" class="text-neutral-400">→</span>
+							{label}
+						</a>
+					</li>
+				))}
+			</ul>
+		</section>
+	</main>
+</Base>
