@@ -1,0 +1,185 @@
+---
+import Base from '../layouts/Base.astro';
+
+const experience = [
+	{
+		company: 'Volvo Cars',
+		role: 'Senior DevOps/SRE Engineer',
+		dates: 'Mar 2024 – Present',
+		summary:
+			'Build and run CI/CD pipelines and cloud infrastructure on AWS and Azure to support application teams across the business.',
+	},
+	{
+		company: 'JPMorgan Chase',
+		role: 'VP, Software Engineer',
+		dates: 'Apr 2022 – Mar 2024',
+		summary:
+			'AWS infrastructure and deployment automation for financial services platforms.',
+	},
+	{
+		company: 'PNC Financial Services',
+		role: 'Senior Technology Engineer',
+		dates: 'Oct 2018 – Apr 2022',
+		summary:
+			'DevOps engineering across container platforms, Ansible automation, and SRE practices for enterprise applications.',
+	},
+	{
+		company: 'PNC Financial Services',
+		role: 'Lead Software Engineer, Java Performance',
+		dates: 'Feb 2014 – Oct 2018',
+		summary:
+			'Dynatrace architect. Real-user monitoring and performance fault analysis across the Java application portfolio.',
+	},
+	{
+		company: 'Verizon Wireless',
+		role: 'Senior Information Analyst',
+		dates: 'Jul 2011 – Feb 2014',
+		summary:
+			'Subject matter expert for application monitoring tools across a portfolio of 20+ applications.',
+	},
+	{
+		company: 'Merck / Schering-Plough',
+		role: 'IT Associate Analyst',
+		dates: 'Jan 2008 – Jul 2011',
+		summary:
+			'IT leadership rotational program. Early work on application performance management and enterprise operations.',
+	},
+];
+
+const projects = [
+	{
+		name: 'Watchtower',
+		summary:
+			'Personal algorithmic trading platform running on my homelab Kubernetes cluster. Built with the same DevOps and observability practices I apply professionally — containerized services, GitOps deploys with ArgoCD, and end-to-end metrics via Prometheus and Grafana.',
+	},
+];
+
+const skills = [
+	{ category: 'Cloud', items: 'AWS, Azure' },
+	{ category: 'Platform', items: 'Kubernetes, Docker, Ansible' },
+	{ category: 'CI/CD', items: 'GitHub Actions, Jenkins, Azure DevOps' },
+	{ category: 'Observability', items: 'Dynatrace, Datadog, Grafana, Prometheus' },
+	{ category: 'Languages', items: 'Python, Go' },
+];
+
+const education = [
+	{
+		school: 'Stevens Institute of Technology',
+		degree: 'M.S. Information Systems — Project Management',
+		dates: '2009 – 2015',
+	},
+	{
+		school: 'Stevens Institute of Technology',
+		degree: 'B.S. Computer Science',
+		dates: '2003 – 2007',
+	},
+];
+---
+
+<Base title="Resume — William Zelesny" description="William Zelesny — experience and education.">
+	<main class="mx-auto max-w-xl px-6 py-16 sm:py-24">
+		<nav class="no-print flex items-center justify-between text-sm">
+			<a
+				href="/"
+				class="inline-flex items-center gap-2 text-neutral-500 transition hover:text-neutral-900"
+			>
+				<span aria-hidden="true">←</span>
+				William Zelesny
+			</a>
+			<button
+				type="button"
+				onclick="window.print()"
+				class="text-neutral-500 transition hover:text-neutral-900"
+			>
+				Save as PDF
+			</button>
+		</nav>
+
+		<h1 class="mt-8 text-3xl font-semibold tracking-tight sm:text-4xl">Resume</h1>
+
+		<p class="mt-3 text-sm text-neutral-600">
+			<a
+				href="mailto:william@zelesny.com"
+				class="underline decoration-neutral-300 underline-offset-4 transition hover:decoration-neutral-900"
+				>william@zelesny.com</a
+			>
+			<span class="text-neutral-300"> · </span>
+			<a
+				href="https://www.linkedin.com/in/wzelesny"
+				class="underline decoration-neutral-300 underline-offset-4 transition hover:decoration-neutral-900"
+				>LinkedIn</a
+			>
+			<span class="text-neutral-300"> · </span>
+			<a
+				href="https://github.com/williamzelesny"
+				class="underline decoration-neutral-300 underline-offset-4 transition hover:decoration-neutral-900"
+				>GitHub</a
+			>
+			<span class="text-neutral-300"> · </span>
+			<span>Clinton, NJ</span>
+		</p>
+
+		<section class="mt-12">
+			<h2 class="text-sm font-medium uppercase tracking-wider text-neutral-500">
+				Experience
+			</h2>
+			<ol class="mt-6 space-y-8">
+				{experience.map(({ company, role, dates, summary }) => (
+					<li>
+						<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+							<h3 class="text-base font-semibold text-neutral-900">{company}</h3>
+							<span class="text-sm text-neutral-500">{dates}</span>
+						</div>
+						<p class="mt-1 text-neutral-600">{role}</p>
+						<p class="mt-2 text-neutral-700 leading-relaxed">{summary}</p>
+					</li>
+				))}
+			</ol>
+		</section>
+
+		<section class="mt-16">
+			<h2 class="text-sm font-medium uppercase tracking-wider text-neutral-500">
+				Projects
+			</h2>
+			<ol class="mt-6 space-y-6">
+				{projects.map(({ name, summary }) => (
+					<li>
+						<h3 class="text-base font-semibold text-neutral-900">{name}</h3>
+						<p class="mt-2 text-neutral-700 leading-relaxed">{summary}</p>
+					</li>
+				))}
+			</ol>
+		</section>
+
+		<section class="mt-16">
+			<h2 class="text-sm font-medium uppercase tracking-wider text-neutral-500">
+				Skills
+			</h2>
+			<dl class="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3">
+				{skills.map(({ category, items }) => (
+					<>
+						<dt class="text-sm font-medium text-neutral-500">{category}</dt>
+						<dd class="text-neutral-700">{items}</dd>
+					</>
+				))}
+			</dl>
+		</section>
+
+		<section class="mt-16">
+			<h2 class="text-sm font-medium uppercase tracking-wider text-neutral-500">
+				Education
+			</h2>
+			<ol class="mt-6 space-y-6">
+				{education.map(({ school, degree, dates }) => (
+					<li>
+						<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+							<h3 class="text-base font-semibold text-neutral-900">{school}</h3>
+							<span class="text-sm text-neutral-500">{dates}</span>
+						</div>
+						<p class="mt-1 text-neutral-600">{degree}</p>
+					</li>
+				))}
+			</ol>
+		</section>
+	</main>
+</Base>
