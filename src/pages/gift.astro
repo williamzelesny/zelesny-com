@@ -9,14 +9,6 @@ import { readGiftData } from '../lib/gift';
 // ship with blank or duplicated codes. See src/lib/gift.ts.
 const children = readGiftData(GIFT_DATA);
 
-// Not yet confirmed against NJBEST. Replace both with values observed in the
-// real Ugift flow before this page can build.
-const MINIMUM: string = '[CONFIRM: NJBEST minimum contribution]';
-const PAYMENT_METHODS: string = '[CONFIRM: which online payment methods NJBEST offers]';
-
-// These are gated by a test rather than a throw: this page renders per request,
-// so throwing here would 500 a visitor instead of failing CI. See gift.test.ts.
-
 const UGIFT_URL = 'https://www.ugift529.com';
 ---
 
@@ -43,7 +35,7 @@ const UGIFT_URL = 'https://www.ugift529.com';
 		<p class="mt-4 text-neutral-700 leading-relaxed">
 			This page is mine — William Zelesny. If you were sent here and want to check
 			it is genuine before going further, the link above goes to the rest of my
-			site, and you can reach me at
+			site, and you can reach me at{' '}
 			<a
 				href="mailto:william@zelesny.com"
 				class="underline decoration-neutral-300 underline-offset-4 transition hover:decoration-neutral-900"
@@ -100,7 +92,7 @@ const UGIFT_URL = 'https://www.ugift529.com';
 				class="mt-4 list-decimal space-y-4 pl-6 text-neutral-700 leading-relaxed marker:font-medium marker:text-neutral-900"
 			>
 				<li>
-					Go to
+					Go to{' '}
 					<a
 						href={UGIFT_URL}
 						target="_blank"
@@ -115,13 +107,14 @@ const UGIFT_URL = 'https://www.ugift529.com';
 					the child you're giving to.
 				</li>
 				<li>
-					Choose an amount.
-					The minimum is {MINIMUM}.
+					Choose an amount. Any size is welcome — this isn't something where
+					you need to give hundreds.
 				</li>
 				<li>
-					Pay by
-					{PAYMENT_METHODS}, or mail a check instead if you'd rather not enter
-					bank details online.
+					Pay by bank transfer, either once or on a schedule. If you'd rather
+					not put bank details into a website, you can print a coupon and mail
+					a check instead — it's made out to{' '}
+					<span class="whitespace-nowrap">Ugift® - NJBEST 529 College Savings Plan</span>.
 				</li>
 				<li>
 					You'll get a
