@@ -7,7 +7,8 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN --mount=type=secret,id=gift_data,env=GIFT_DATA,required=true \
+    npm run build
 
 FROM node:22-alpine AS runtime
 WORKDIR /app
