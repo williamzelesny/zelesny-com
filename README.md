@@ -1,43 +1,69 @@
-# Astro Starter Kit: Minimal
+# zelesny-com
+
+Source for [www.zelesny.com](https://www.zelesny.com). A static [Astro](https://astro.build) site,
+built into a container image and served from a homelab k3s cluster.
+
+## Requirements
+
+- Node 22 (`package.json` sets `engines.node` to `>=22.12.0`; CI and the image both pin 22)
+
+## Getting started
 
 ```sh
-npm create astro@latest -- --template minimal
+npm ci
+cp .env.example .env.local   # then replace the placeholder gift data
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+| Command | What it does |
+| :------ | :----------- |
+| `npm run dev` | Dev server with HMR at `localhost:4321` |
+| `npm run build` | Static build into `dist/` |
+| `npm run preview` | Serve the built `dist/` locally |
+| `npm test` | Run the test suite |
 
-## 🚀 Project Structure
+## Gift data
 
-Inside of your Astro project, you'll see the following folders and files:
+`/gift` is an unlisted page that shares the children's NJBEST Ugift codes with family.
+It renders from a single environment variable, `GIFT_DATA`, holding **single-line JSON**:
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```
+GIFT_DATA=[{"name":"Example","code":"AAA-000"}]
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+**The authoritative copy lives in the password manager.** Both the `GIFT_DATA` repository
+secret and your local `.env.local` are derived from it — GitHub Actions secrets are
+write-only and cannot be read back, so without that copy there is no way to make an
+incremental edit without a fresh NJBEST login.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+The data never enters this repository. It reaches the build as an Actions secret, crosses
+into the container as a BuildKit secret mount, and is validated by `src/lib/gift.ts` before
+anything renders. A missing or malformed value fails the build rather than publishing a page
+with blank codes.
 
-Any static assets, like images, can be placed in the `public/` directory.
+Building without it will fail. For a clone that just needs the site to build, any
+well-formed placeholder works.
 
-## 🧞 Commands
+### Updating a code or adding a child
 
-All commands are run from the root of the project, from a terminal:
+1. Update the authoritative copy in the password manager.
+2. Update the `GIFT_DATA` repository secret in GitHub Actions settings.
+3. **Push an empty commit to `main`.** A `workflow_dispatch` run on an unchanged commit
+   re-emits the same SHA tag, so Renovate would see no bump and nothing would roll out.
+4. Confirm the workflow pushed a new tag, that Renovate opened the bump PR in
+   `homelab-kube-cluster`, and that it merged.
+5. Load `/gift` and confirm the rendered pairings match NJBEST.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Standing constraints
 
-## 👀 Want to learn more?
+Three things that look like harmless cleanups but are not:
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- **Do not re-enable Docker layer caching** in `.github/workflows/build-image.yml`.
+  `cache-to: type=gha,mode=max` exports the layer holding the rendered page, and on a public
+  repository anyone who can open a pull request can read those caches. Actions caches have no
+  visibility setting.
+- **Never add `/gift` to a `robots.txt` `Disallow` list.** Blocking the crawl stops crawlers
+  from ever reading the page's own no-index instruction, which is self-defeating.
+- **If a sitemap integration is ever added, exclude `/gift` from it.**
+
+Background and rationale live in `docs/brainstorms/` and `docs/plans/`.

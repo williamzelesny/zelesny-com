@@ -16,6 +16,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Pinned to match the Dockerfile's node:22-alpine. The engines range in
+      # package.json is open-ended and would drift to a newer major here.
+      # `cache: npm` caches only the public package tarballs in ~/.npm -- gift
+      # data never reaches it, unlike the Docker layer cache removed below.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Guards the gift-data validation, which is where R9's fail-loudly
+      # behaviour lives. Runs before the image build so a regression fails
+      # here rather than shipping.
+      - name: Run tests
+        run: npm test
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
