@@ -65,9 +65,20 @@ describe('readGiftData', () => {
 		});
 
 		it('throws when the value is an empty string', () => {
-			// envField.string() treats "" as present, so the schema will not
-			// catch this -- the parse step is what makes R9 hold here.
+			// Note: Astro's env schema rejects "" as missing before this module
+			// is reached, so in practice the build fails earlier. This case
+			// keeps the module fail-closed on its own terms regardless.
 			expect(() => readGiftData('')).toThrow(/not valid JSON/i);
+		});
+
+		it.each([
+			['undefined', undefined],
+			['null', null],
+			['a number', 42],
+		])('throws when the value is %s rather than a string', (_label, value) => {
+			// The real runtime shape of an unset environment variable. Guarded
+			// explicitly rather than relying on JSON.parse coercion.
+			expect(() => readGiftData(value as unknown as string)).toThrow(/missing/i);
 		});
 	});
 
@@ -122,7 +133,7 @@ describe('readGiftData', () => {
 		});
 	});
 
-	describe('duplicate codes', () => {
+	describe('cross-entry invariants', () => {
 		it('throws when two entries share a code, naming both indices', () => {
 			const payload = json([
 				{ name: 'Ada', code: 'AAA-111' },
@@ -130,6 +141,56 @@ describe('readGiftData', () => {
 			]);
 
 			expect(() => readGiftData(payload)).toThrow(/entry 1.*entry 0|entry 0.*entry 1/i);
+		});
+
+		it('reports the first index correctly for a non-adjacent duplicate', () => {
+			const payload = json([
+				{ name: 'Ada', code: 'AAA-111' },
+				{ name: 'Grace', code: 'BBB-222' },
+				{ name: 'Katherine', code: 'AAA-111' },
+			]);
+
+			expect(() => readGiftData(payload)).toThrow(/entry 2 has the same code as entry 0/i);
+		});
+
+		it.each([
+			['whitespace padding', ' AAA-111 '],
+			['different case', 'aaa-111'],
+		])('catches a duplicate code disguised by %s', (_label, second) => {
+			const payload = json([
+				{ name: 'Ada', code: 'AAA-111' },
+				{ name: 'Grace', code: second },
+			]);
+
+			expect(() => readGiftData(payload)).toThrow(/same code/i);
+		});
+
+		it('throws when two entries share a name', () => {
+			// The page would render two identical labels with different codes
+			// and no way for a giver to tell which is which.
+			const payload = json([
+				{ name: 'Ada', code: 'AAA-111' },
+				{ name: 'ada', code: 'BBB-222' },
+			]);
+
+			expect(() => readGiftData(payload)).toThrow(/same name/i);
+		});
+	});
+
+	describe('invisible and bidirectional characters', () => {
+		it.each([
+			['a zero-width space', 'AAA-\u200B111'],
+			['a right-to-left override', 'AAA-\u202E111'],
+			['a BOM', 'AAA-\uFEFF111'],
+			['a control character', 'AAA-\u0001111'],
+		])('rejects a code containing %s', (_label, code) => {
+			expect(() => readGiftData(json([{ name: 'Ada', code }]))).toThrow(/invisible|bidirectional/i);
+		});
+
+		it('rejects a name containing a zero-width character', () => {
+			expect(() =>
+				readGiftData(json([{ name: 'A\u200Bda', code: 'AAA-111' }])),
+			).toThrow(/invisible|bidirectional/i);
 		});
 	});
 
@@ -154,6 +215,8 @@ describe('readGiftData', () => {
 			],
 			['not a list', json({ name: NAME, code: CODE })],
 			['the payload is unparseable', `${NAME}:${CODE}`],
+			['duplicate names', json([{ name: NAME, code: CODE }, { name: NAME, code: 'BBB-222' }])],
+			['an invisible character', json([{ name: NAME, code: `${CODE}\u200B` }])],
 		];
 
 		it.each(badPayloads)('leaks nothing when %s', (_label, payload) => {

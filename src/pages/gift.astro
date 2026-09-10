@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 import { GIFT_DATA } from 'astro:env/server';
 import Base from '../layouts/Base.astro';
 import { readGiftData } from '../lib/gift';
@@ -12,16 +14,8 @@ const children = readGiftData(GIFT_DATA);
 const MINIMUM: string = '[CONFIRM: NJBEST minimum contribution]';
 const PAYMENT_METHODS: string = '[CONFIRM: which online payment methods NJBEST offers]';
 
-// Merging this branch publishes the page: CI pushes on main, Renovate bumps
-// the homelab deployment, and /gift is a new path on a host the tunnel already
-// terminates. Nothing else gates it, so a note in the plan is not a gate --
-// this is. Same principle as the gift data itself: no path from an unfinished
-// input to a published page.
-if (MINIMUM.startsWith('[CONFIRM') || PAYMENT_METHODS.startsWith('[CONFIRM')) {
-	throw new Error(
-		'gift.astro still carries unconfirmed copy facts. Replace MINIMUM and PAYMENT_METHODS with values observed at NJBEST before building.',
-	);
-}
+// These are gated by a test rather than a throw: this page renders per request,
+// so throwing here would 500 a visitor instead of failing CI. See gift.test.ts.
 
 const UGIFT_URL = 'https://www.ugift529.com';
 ---
@@ -67,7 +61,7 @@ const UGIFT_URL = 'https://www.ugift529.com';
 						<li class="rounded-lg border border-neutral-200 px-5 py-4">
 							<div class="text-sm text-neutral-500">{name}</div>
 							<code
-								class="mt-1 block select-all font-mono text-xl tracking-[0.18em] text-neutral-900"
+								class="mt-1 block select-all break-all font-mono text-xl tracking-[0.18em] text-neutral-900"
 								>{code}</code
 							>
 						</li>

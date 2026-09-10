@@ -29,9 +29,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Guards the gift-data validation, which is where R9's fail-loudly
-      # behaviour lives. Runs before the image build so a regression fails
-      # here rather than shipping.
+      - name: Type check
+        run: npm run check
+
+      # Guards the gift-data validation and the unconfirmed-copy gate. Runs
+      # before the image build so a regression fails here rather than shipping.
       - name: Run tests
         run: npm test
 
@@ -54,21 +56,14 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=long,prefix=
 
-      # No layer caching on this build. `cache-to: type=gha,mode=max` exports
-      # every intermediate layer -- including the build stage holding the
-      # rendered /gift page. On a public repository anyone who can open a pull
-      # request can read those caches, and Actions caches have no visibility
-      # setting. See docs/plans/2026-09-10-001-feat-ugift-contribution-page-plan.md.
-      # Do not re-add cache-from/cache-to here.
+      # No secrets cross into this build. The gift data is supplied at runtime
+      # by the Doppler operator, so nothing sensitive reaches the image, the
+      # registry, or a build cache.
       - name: Build and push
         uses: docker/build-push-action@v6
-        env:
-          GIFT_DATA: ${{ secrets.GIFT_DATA }}
         with:
           context: .
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          secret-envs: |
-            gift_data=GIFT_DATA

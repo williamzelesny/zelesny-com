@@ -1,13 +1,32 @@
 ---
 title: "feat: Add unlisted Ugift 529 contribution page"
 type: feat
-status: active
+status: completed
 date: 2026-09-10
 origin: docs/brainstorms/ugift-529-contribution-page-requirements.md
 deepened: 2026-09-10
 ---
 
 # feat: Add unlisted Ugift 529 contribution page
+
+> **Superseded in part during implementation (2026-09-10).** This plan specified build-time
+> injection from a GitHub Actions secret. Partway through, the homelab cluster turned out to
+> already run a Doppler operator that every other workload uses for secrets, and code review
+> verified that the GHCR package is anonymously pullable — meaning the build-time approach
+> would have published the codes in the image.
+>
+> The implementation instead marks `/gift` as server-rendered and reads `GIFT_DATA` at request
+> time from the Doppler-managed Kubernetes Secret. This is the "supplying the page from a
+> cluster secret at deploy time" option recorded below as *rejected*; it was rejected on the
+> basis that Doppler was not available, which was wrong.
+>
+> What changed as a result: no secret enters the build, the image, or the registry, so the
+> Actions-cache and GHCR-visibility concerns below no longer apply to this data. Updating a
+> code no longer needs a rebuild, a new tag, or a Renovate bump. The unconfirmed-copy gate
+> moved from a build-time throw to a test, because a per-request throw would 500 a visitor
+> rather than fail CI. Astro was upgraded 6 → 7 to get a compatible Node adapter.
+>
+> The requirements, scope boundaries, and page-content decisions below all still hold.
 
 ## Summary
 

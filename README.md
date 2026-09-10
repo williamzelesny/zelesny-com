@@ -1,7 +1,10 @@
 # zelesny-com
 
-Source for [www.zelesny.com](https://www.zelesny.com). A static [Astro](https://astro.build) site,
+Source for [www.zelesny.com](https://www.zelesny.com). An [Astro](https://astro.build) site,
 built into a container image and served from a homelab k3s cluster.
+
+Two pages are prerendered. One — `/gift` — renders per request, so the data it shows never
+enters the build.
 
 ## Requirements
 
@@ -18,8 +21,9 @@ npm run dev
 | Command | What it does |
 | :------ | :----------- |
 | `npm run dev` | Dev server with HMR at `localhost:4321` |
-| `npm run build` | Static build into `dist/` |
-| `npm run preview` | Serve the built `dist/` locally |
+| `npm run build` | Build into `dist/` (`dist/client` prerendered, `dist/server` the request handler) |
+| `npm run preview` | Serve the build locally |
+| `npm run check` | Type check (`astro check`) |
 | `npm test` | Run the test suite |
 
 ## Gift data
@@ -31,39 +35,29 @@ It renders from a single environment variable, `GIFT_DATA`, holding **single-lin
 GIFT_DATA=[{"name":"Example","code":"AAA-000"}]
 ```
 
-**The authoritative copy lives in the password manager.** Both the `GIFT_DATA` repository
-secret and your local `.env.local` are derived from it — GitHub Actions secrets are
-write-only and cannot be read back, so without that copy there is no way to make an
-incremental edit without a fresh NJBEST login.
+**Doppler is the authoritative copy.** In the cluster, the Doppler operator syncs it into a
+Kubernetes Secret and the Deployment exposes it to the container as `GIFT_DATA` — the same
+pattern every other workload in `homelab-kube-cluster` uses. Locally, `.env.local` stands in.
 
-The data never enters this repository. It reaches the build as an Actions secret, crosses
-into the container as a BuildKit secret mount, and is validated by `src/lib/gift.ts` before
-anything renders. A missing or malformed value fails the build rather than publishing a page
-with blank codes.
-
-Building without it will fail. For a clone that just needs the site to build, any
-well-formed placeholder works.
+The data never enters this repository, the build, the image, or the registry. `/gift` opts out
+of prerendering, so the value is read at request time and validated by `src/lib/gift.ts` before
+anything renders. Malformed data throws rather than rendering a page with wrong codes.
 
 ### Updating a code or adding a child
 
-1. Update the authoritative copy in the password manager.
-2. Update the `GIFT_DATA` repository secret in GitHub Actions settings.
-3. **Push an empty commit to `main`.** A `workflow_dispatch` run on an unchanged commit
-   re-emits the same SHA tag, so Renovate would see no bump and nothing would roll out.
-4. Confirm the workflow pushed a new tag, that Renovate opened the bump PR in
-   `homelab-kube-cluster`, and that it merged.
-5. Load `/gift` and confirm the rendered pairings match NJBEST.
+1. Update the value in Doppler.
+2. The operator syncs the Kubernetes Secret; restart the deployment to pick it up.
+3. Load `/gift` and confirm the rendered pairings match NJBEST.
+
+No rebuild, no new image, no Renovate bump — the data is not in the image.
 
 ## Standing constraints
 
-Three things that look like harmless cleanups but are not:
+Two things that look like harmless cleanups but are not:
 
-- **Do not re-enable Docker layer caching** in `.github/workflows/build-image.yml`.
-  `cache-to: type=gha,mode=max` exports the layer holding the rendered page, and on a public
-  repository anyone who can open a pull request can read those caches. Actions caches have no
-  visibility setting.
 - **Never add `/gift` to a `robots.txt` `Disallow` list.** Blocking the crawl stops crawlers
-  from ever reading the page's own no-index instruction, which is self-defeating.
+  from ever reading the page's own no-index instruction, which is self-defeating. The page
+  sends `noindex, noarchive` and a no-referrer instruction via the layout's `unlisted` prop.
 - **If a sitemap integration is ever added, exclude `/gift` from it.**
 
 Background and rationale live in `docs/brainstorms/` and `docs/plans/`.

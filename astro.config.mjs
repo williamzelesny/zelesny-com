@@ -1,21 +1,24 @@
 // @ts-check
 import { defineConfig, envField } from 'astro/config';
 
+import node from '@astrojs/node';
 import tailwindcss from '@tailwindcss/vite';
 
 // https://astro.build/config
 export default defineConfig({
+  // Pages are prerendered by default. Only /gift opts out (see its frontmatter):
+  // it renders per request so the children's names and codes are read from the
+  // environment at runtime and never enter the build, the image, or the registry.
+  adapter: node({ mode: 'standalone' }),
   env: {
     schema: {
-      // The children's first names and Ugift codes, as single-line JSON.
-      // Declared here only -- .env files are not loaded inside this config.
-      // See docs/plans/2026-09-10-001-feat-ugift-contribution-page-plan.md.
+      // Supplied at runtime by the Doppler operator, which syncs it into a
+      // Kubernetes Secret the Deployment exposes as an env var. Single-line
+      // JSON; see .env.example. Never present at build time -- validateSecrets
+      // is deliberately left off, or the build would demand a value it must
+      // not have.
       GIFT_DATA: envField.string({ context: 'server', access: 'secret' }),
     },
-    // No-op for a static build (verified 2026-09-10: `astro build` exits 0
-    // with GIFT_DATA unset). The real guard is the page's import plus
-    // readGiftData(). Kept only as a tripwire if an adapter is ever added.
-    validateSecrets: true,
   },
   vite: {
     plugins: [tailwindcss()]
