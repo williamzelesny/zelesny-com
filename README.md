@@ -53,7 +53,11 @@ No rebuild, no new image, no Renovate bump — the data is not in the image.
 
 ## Standing constraints
 
-Two things that look like harmless cleanups but are not:
+Three things that look like harmless cleanups but are not:
+
+- **`/gift` must never be prerendered.** Its `export const prerender = false` is the only thing
+  keeping the children's names and codes out of the container image, and that image is published
+  to a public registry. A test asserts it; do not delete the test either.
 
 - **Never add `/gift` to a `robots.txt` `Disallow` list.** Blocking the crawl stops crawlers
   from ever reading the page's own no-index instruction, which is self-defeating. The page
