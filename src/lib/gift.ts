@@ -61,6 +61,8 @@ export function readGiftData(raw: string): GiftChild[] {
 		return { name: entry.name, code: entry.code };
 	});
 
+	// Second pass on purpose: the checks above validate each entry on its own,
+	// this one validates a relationship between entries.
 	const seen = new Map<string, number>();
 
 	children.forEach((child, index) => {

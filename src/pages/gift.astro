@@ -7,11 +7,21 @@ import { readGiftData } from '../lib/gift';
 // ship with blank or duplicated codes. See src/lib/gift.ts.
 const children = readGiftData(GIFT_DATA);
 
-// Not yet confirmed against NJBEST. Deliberately rendered as visible gaps
-// rather than plausible-sounding guesses -- do not publish until both are
-// replaced with observed values.
-const MINIMUM = '[CONFIRM: NJBEST minimum contribution]';
-const PAYMENT_METHODS = '[CONFIRM: which online payment methods NJBEST offers]';
+// Not yet confirmed against NJBEST. Replace both with values observed in the
+// real Ugift flow before this page can build.
+const MINIMUM: string = '[CONFIRM: NJBEST minimum contribution]';
+const PAYMENT_METHODS: string = '[CONFIRM: which online payment methods NJBEST offers]';
+
+// Merging this branch publishes the page: CI pushes on main, Renovate bumps
+// the homelab deployment, and /gift is a new path on a host the tunnel already
+// terminates. Nothing else gates it, so a note in the plan is not a gate --
+// this is. Same principle as the gift data itself: no path from an unfinished
+// input to a published page.
+if (MINIMUM.startsWith('[CONFIRM') || PAYMENT_METHODS.startsWith('[CONFIRM')) {
+	throw new Error(
+		'gift.astro still carries unconfirmed copy facts. Replace MINIMUM and PAYMENT_METHODS with values observed at NJBEST before building.',
+	);
+}
 
 const UGIFT_URL = 'https://www.ugift529.com';
 ---
@@ -89,9 +99,14 @@ const UGIFT_URL = 'https://www.ugift529.com';
 			<h2 class="text-sm font-medium uppercase tracking-wider text-neutral-500">
 				How to give
 			</h2>
-			<ol class="mt-4 space-y-4 text-neutral-700 leading-relaxed">
+			<!-- Tailwind preflight strips list-style, so the decimal marker is
+			     restored explicitly rather than hand-numbering each item. Also keeps
+			     the list semantics screen readers rely on. -->
+			<ol
+				class="mt-4 list-decimal space-y-4 pl-6 text-neutral-700 leading-relaxed marker:font-medium marker:text-neutral-900"
+			>
 				<li>
-					<span class="font-medium text-neutral-900">1.</span> Go to
+					Go to
 					<a
 						href={UGIFT_URL}
 						target="_blank"
@@ -102,20 +117,20 @@ const UGIFT_URL = 'https://www.ugift529.com';
 					code still on screen.
 				</li>
 				<li>
-					<span class="font-medium text-neutral-900">2.</span> Enter the code for
+					Enter the code for
 					the child you're giving to.
 				</li>
 				<li>
-					<span class="font-medium text-neutral-900">3.</span> Choose an amount.
+					Choose an amount.
 					The minimum is {MINIMUM}.
 				</li>
 				<li>
-					<span class="font-medium text-neutral-900">4.</span> Pay by
+					Pay by
 					{PAYMENT_METHODS}, or mail a check instead if you'd rather not enter
 					bank details online.
 				</li>
 				<li>
-					<span class="font-medium text-neutral-900">5.</span> You'll get a
+					You'll get a
 					confirmation page and an email. Your name shows up next to the gift on
 					our end, so we'll know it was you.
 				</li>

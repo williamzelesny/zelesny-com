@@ -153,22 +153,10 @@ describe('readGiftData', () => {
 				]),
 			],
 			['not a list', json({ name: NAME, code: CODE })],
+			['the payload is unparseable', `${NAME}:${CODE}`],
 		];
 
 		it.each(badPayloads)('leaks nothing when %s', (_label, payload) => {
-			expect(() => readGiftData(payload)).toThrow();
-			try {
-				readGiftData(payload);
-			} catch (error) {
-				const message = (error as Error).message;
-				expect(message).not.toContain(NAME);
-				expect(message).not.toContain(CODE);
-			}
-		});
-
-		it('does not echo the raw payload when it is unparseable', () => {
-			const payload = `${NAME}:${CODE}`;
-
 			expect(() => readGiftData(payload)).toThrow();
 			try {
 				readGiftData(payload);

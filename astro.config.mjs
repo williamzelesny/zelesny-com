@@ -12,12 +12,9 @@ export default defineConfig({
       // See docs/plans/2026-09-10-001-feat-ugift-contribution-page-plan.md.
       GIFT_DATA: envField.string({ context: 'server', access: 'secret' }),
     },
-    // Kept on, but note it does NOT fail a static build on its own: verified
-    // 2026-09-10 that `astro build` exits 0 with GIFT_DATA unset. R9's
-    // missing-data half is carried by src/pages/gift.astro importing
-    // astro:env/server and handing the value to readGiftData, which throws on
-    // anything unparseable -- including a missing value. This flag matters
-    // only if a server adapter is added later.
+    // No-op for a static build (verified 2026-09-10: `astro build` exits 0
+    // with GIFT_DATA unset). The real guard is the page's import plus
+    // readGiftData(). Kept only as a tripwire if an adapter is ever added.
     validateSecrets: true,
   },
   vite: {
