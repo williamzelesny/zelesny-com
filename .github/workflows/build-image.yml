@@ -3,6 +3,7 @@ name: Build and push image
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -10,7 +11,37 @@ permissions:
   packages: write
 
 jobs:
-  build:
+  # Runs on pull requests too, so a failure shows up before merge rather than
+  # after it has already turned main red.
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Pinned to match the Dockerfile's node:22-alpine. The engines range in
+      # package.json is open-ended and would drift to a newer major here.
+      # `cache: npm` caches only the public package tarballs in ~/.npm.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run check
+
+      # Guards the gift-data validation, the unconfirmed-copy gate, and the
+      # assertions that /gift stays server-rendered and unlisted.
+      - name: Run tests
+        run: npm test
+
+  image:
+    needs: verify
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,6 +66,9 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=long,prefix=
 
+      # No secrets cross into this build. The gift data is supplied at runtime
+      # by the Doppler operator, so nothing sensitive reaches the image, the
+      # registry, or a build cache.
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -43,5 +77,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max

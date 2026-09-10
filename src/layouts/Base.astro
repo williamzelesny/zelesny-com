@@ -4,9 +4,19 @@ import '../styles/global.css';
 interface Props {
 	title: string;
 	description?: string;
+	/**
+	 * Keep this page out of search results, out of on-demand web archives, and
+	 * stop its outbound links handing the URL to third parties. Defaults off --
+	 * every existing page renders exactly as before without it.
+	 */
+	unlisted?: boolean;
 }
 
-const { title, description = 'William Zelesny — software engineer.' } = Astro.props;
+const {
+	title,
+	description = 'William Zelesny — software engineer.',
+	unlisted = false,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -17,6 +27,16 @@ const { title, description = 'William Zelesny — software engineer.' } = Astro.
 		<meta name="generator" content={Astro.generator} />
 		<meta name="description" content={description} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		{
+			unlisted && (
+				<>
+					{/* noarchive as well as noindex: on-demand archival services
+					    capture URLs regardless of noindex. */}
+					<meta name="robots" content="noindex, noarchive" />
+					<meta name="referrer" content="no-referrer" />
+				</>
+			)
+		}
 		<title>{title}</title>
 	</head>
 	<body class="bg-white text-neutral-900 antialiased">

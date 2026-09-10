@@ -1,0 +1,151 @@
+---
+export const prerender = false;
+
+import { GIFT_DATA } from 'astro:env/server';
+import Base from '../layouts/Base.astro';
+import { readGiftData } from '../lib/gift';
+
+// Throws at build time on missing or malformed data, so this page can never
+// ship with blank or duplicated codes. See src/lib/gift.ts.
+const children = readGiftData(GIFT_DATA);
+
+// Not yet confirmed against NJBEST. Replace both with values observed in the
+// real Ugift flow before this page can build.
+const MINIMUM: string = '[CONFIRM: NJBEST minimum contribution]';
+const PAYMENT_METHODS: string = '[CONFIRM: which online payment methods NJBEST offers]';
+
+// These are gated by a test rather than a throw: this page renders per request,
+// so throwing here would 500 a visitor instead of failing CI. See gift.test.ts.
+
+const UGIFT_URL = 'https://www.ugift529.com';
+---
+
+<Base
+	title="Gift a 529 contribution — William Zelesny"
+	description="How to contribute to a NJBEST 529 college savings plan."
+	unlisted
+>
+	<main class="mx-auto max-w-xl px-6 py-16 sm:py-24">
+		<nav class="text-sm">
+			<a
+				href="/"
+				class="inline-flex items-center gap-2 text-neutral-500 transition hover:text-neutral-900"
+			>
+				<span aria-hidden="true">←</span>
+				William Zelesny
+			</a>
+		</nav>
+
+		<h1 class="mt-8 text-3xl font-semibold tracking-tight sm:text-4xl">
+			Contributing to the kids' 529 plans
+		</h1>
+
+		<p class="mt-4 text-neutral-700 leading-relaxed">
+			This page is mine — William Zelesny. If you were sent here and want to check
+			it is genuine before going further, the link above goes to the rest of my
+			site, and you can reach me at
+			<a
+				href="mailto:william@zelesny.com"
+				class="underline decoration-neutral-300 underline-offset-4 transition hover:decoration-neutral-900"
+				>william@zelesny.com</a
+			>.
+		</p>
+
+		<section class="mt-12">
+			<h2 class="text-sm font-medium uppercase tracking-wider text-neutral-500">
+				The codes
+			</h2>
+			<ul class="mt-4 space-y-3">
+				{
+					children.map(({ name, code }) => (
+						<li class="rounded-lg border border-neutral-200 px-5 py-4">
+							<div class="text-sm text-neutral-500">{name}</div>
+							<code
+								class="mt-1 block select-all break-all font-mono text-xl tracking-[0.18em] text-neutral-900"
+								>{code}</code
+							>
+						</li>
+					))
+				}
+			</ul>
+			<p class="mt-3 text-sm text-neutral-500">
+				Tap a code to select the whole thing.
+			</p>
+		</section>
+
+		<section class="mt-12 space-y-4 text-neutral-700 leading-relaxed">
+			<h2 class="text-sm font-medium uppercase tracking-wider text-neutral-500">
+				What the code is
+			</h2>
+			<p>
+				Each child has a 529 college savings account with NJBEST. A Ugift code is
+				the way to put money into one without needing the account number.
+			</p>
+			<p>
+				A code can only add money. It does not show the balance, it cannot be used
+				to take anything out, and it gives no access to the account itself. If a
+				code ends up somewhere it shouldn't, the worst that happens is a stranger
+				contributes.
+			</p>
+		</section>
+
+		<section class="mt-12">
+			<h2 class="text-sm font-medium uppercase tracking-wider text-neutral-500">
+				How to give
+			</h2>
+			<!-- Tailwind preflight strips list-style, so the decimal marker is
+			     restored explicitly rather than hand-numbering each item. Also keeps
+			     the list semantics screen readers rely on. -->
+			<ol
+				class="mt-4 list-decimal space-y-4 pl-6 text-neutral-700 leading-relaxed marker:font-medium marker:text-neutral-900"
+			>
+				<li>
+					Go to
+					<a
+						href={UGIFT_URL}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="underline decoration-neutral-300 underline-offset-4 transition hover:decoration-neutral-900"
+						>ugift529.com</a
+					>. It opens in a new tab, so this page stays open behind it with the
+					code still on screen.
+				</li>
+				<li>
+					Enter the code for
+					the child you're giving to.
+				</li>
+				<li>
+					Choose an amount.
+					The minimum is {MINIMUM}.
+				</li>
+				<li>
+					Pay by
+					{PAYMENT_METHODS}, or mail a check instead if you'd rather not enter
+					bank details online.
+				</li>
+				<li>
+					You'll get a
+					confirmation page and an email. Your name shows up next to the gift on
+					our end, so we'll know it was you.
+				</li>
+			</ol>
+		</section>
+
+		<p class="mt-12">
+			<a
+				href={UGIFT_URL}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="inline-flex items-baseline gap-2 text-neutral-900 underline decoration-neutral-300 underline-offset-4 transition hover:decoration-neutral-900"
+			>
+				Go to Ugift
+				<span aria-hidden="true" class="text-neutral-400">→</span>
+			</a>
+		</p>
+
+		<p class="mt-12 text-sm text-neutral-500">
+			Any trouble, or you'd rather just hand over a check — email me and I'll sort
+			it out.
+		</p>
+	</main>
+</Base>
