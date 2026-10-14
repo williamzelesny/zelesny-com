@@ -1,0 +1,9 @@
+# Repo contract for refinery (github.com/williamzelesny/refinery): how a run
+# sets up and checks its work in this repo. Refinery ignores repos without it.
+tools:
+  node: "22"
+setup:
+  - npm ci --no-audit --no-fund
+verify:
+  - npm run check
+  - npm test
