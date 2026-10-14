@@ -106,3 +106,17 @@ Deploys to the homelab k3s cluster in the sibling repo `~/Code/homelab-kube-clus
 - ~~Registry~~ — resolved: GHCR under `williamzelesny/zelesny-com`.
 - Resume format — inline HTML page, downloadable PDF, or both?
 - Is there a portfolio project list anywhere yet, or do we build that later?
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in this repo's GitHub Issues (`williamzelesny/zelesny-com`), via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The default five-role vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). Labels prefixed `refinery:` belong to refinery's runtime and aren't triage roles. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` plus `docs/adr/` at the repo root, created lazily. See `docs/agents/domain.md`.
